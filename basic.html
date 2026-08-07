@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Basic Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Basic Calculator</h1>
+  <a href="index.html">&larr; Home</a>
+
+  <div>
+    <input type="number" id="numA" placeholder="First number">
+    <select id="operation">
+      <option value="add">Add (+)</option>
+      <option value="subtract">Subtract (-)</option>
+      <option value="multiply">Multiply (x)</option>
+      <option value="divide">Divide (/)</option>
+    </select>
+    <input type="number" id="numB" placeholder="Second number">
+    <button id="calcBtn">Calculate</button>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <script src="Scripts/basic.js"></script>
+  <script>
+    document.getElementById("calcBtn").addEventListener("click", function () {
+      const box = document.getElementById("result");
+      const a = parseFloat(document.getElementById("numA").value);
+      const b = parseFloat(document.getElementById("numB").value);
+      const op = document.getElementById("operation").value;
+
+      box.className = "result";
+
+      if (Number.isNaN(a) || Number.isNaN(b)) {
+        box.className = "result error";
+        box.textContent = "Please enter both numbers.";
+        return;
+      }
+
+      try {
+        box.textContent = "Result: " + basic[op](a, b);
+      } catch (err) {
+        box.className = "result error";
+        box.textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>

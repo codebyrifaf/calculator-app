@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Advanced Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Advanced Calculator</h1>
+  <a href="index.html">&larr; Home</a>
+
+  <div>
+    <select id="operation">
+      <option value="pow">Power (a ^ b)</option>
+      <option value="sqrt">Square Root (a)</option>
+      <option value="percentage">Percentage (b% of a)</option>
+      <option value="roundTo">Round a to b decimals</option>
+    </select>
+  </div>
+
+  <div>
+    <input type="number" id="numA" placeholder="Value a">
+    <input type="number" id="numB" placeholder="Value b">
+    <button id="calcBtn">Calculate</button>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <script src="Scripts/advanced.js"></script>
+  <script>
+    const opSelect = document.getElementById("operation");
+    const inputB = document.getElementById("numB");
+
+    function toggleSecondInput() {
+      inputB.style.display = opSelect.value === "sqrt" ? "none" : "inline-block";
+    }
+
+    opSelect.addEventListener("change", toggleSecondInput);
+    toggleSecondInput();
+
+    document.getElementById("calcBtn").addEventListener("click", function () {
+      const box = document.getElementById("result");
+      const op = opSelect.value;
+      const a = parseFloat(document.getElementById("numA").value);
+      const b = parseFloat(inputB.value);
+
+      box.className = "result";
+
+      if (Number.isNaN(a) || (op !== "sqrt" && Number.isNaN(b))) {
+        box.className = "result error";
+        box.textContent = "Please fill in the required values.";
+        return;
+      }
+
+      try {
+        box.textContent = "Result: " + (op === "sqrt" ? advanced.sqrt(a) : advanced[op](a, b));
+      } catch (err) {
+        box.className = "result error";
+        box.textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>

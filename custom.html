@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Electricity Bill Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Electricity Bill Calculator</h1>
+  <a href="index.html">&larr; Home</a>
+
+  <p>Slab rates: first 100 units tk 5, next 200 tk 8, above 300 tk 12.
+     Fixed charge 150, tax 5%.</p>
+
+  <div>
+    <input type="number" id="prev" placeholder="Previous reading">
+    <input type="number" id="curr" placeholder="Current reading">
+    <button id="billBtn">Calculate Bill</button>
+  </div>
+
+  <div>
+    <input type="number" id="months" placeholder="Months late (optional)">
+    <button id="feeBtn">Calculate Late Fee</button>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <script src="Scripts/basic.js"></script>
+  <script src="Scripts/advanced.js"></script>
+  <script src="Scripts/custom.js"></script>
+  <script>
+    const box = document.getElementById("result");
+
+    function readings() {
+      return {
+        prev: parseFloat(document.getElementById("prev").value),
+        curr: parseFloat(document.getElementById("curr").value)
+      };
+    }
+
+    document.getElementById("billBtn").addEventListener("click", function () {
+      const r = readings();
+      box.className = "result";
+
+      if (Number.isNaN(r.prev) || Number.isNaN(r.curr)) {
+        box.className = "result error";
+        box.textContent = "Please enter both meter readings.";
+        return;
+      }
+
+      try {
+        const bill = custom.calculateBill(r.prev, r.curr);
+        const avg = custom.averageCostPerUnit(r.prev, r.curr);
+        box.innerHTML =
+          "Units consumed: " + bill.units + "<br>" +
+          "Energy charge: " + bill.energyCharge + "<br>" +
+          "Fixed charge: " + bill.fixedCharge + "<br>" +
+          "Tax (5%): " + bill.tax + "<br>" +
+          "<strong>Total: " + bill.total + "</strong><br>" +
+          "Average cost per unit: " + avg;
+      } catch (err) {
+        box.className = "result error";
+        box.textContent = err.message;
+      }
+    });
+
+    document.getElementById("feeBtn").addEventListener("click", function () {
+      const r = readings();
+      const months = parseFloat(document.getElementById("months").value);
+      box.className = "result";
+
+      if (Number.isNaN(r.prev) || Number.isNaN(r.curr) || Number.isNaN(months)) {
+        box.className = "result error";
+        box.textContent = "Enter both readings and the number of months.";
+        return;
+      }
+
+      try {
+        const bill = custom.calculateBill(r.prev, r.curr);
+        const fee = custom.calculateLateFee(bill.total, months);
+        box.innerHTML =
+          "Bill total: " + bill.total + "<br>" +
+          "Late fee for " + months + " month(s): " + fee + "<br>" +
+          "<strong>Amount payable: " + custom.calculateBill(r.prev, r.curr).total + " + " + fee + "</strong>";
+      } catch (err) {
+        box.className = "result error";
+        box.textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>
