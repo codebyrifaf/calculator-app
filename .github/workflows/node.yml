@@ -6,31 +6,80 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
-  build:
+  # ---- (a)-(e) Build and test -------------------------------------------
+  test:
+    name: Build and test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [18.x, 20.x]
+
+    steps:
+      # (a) Checkout the repository
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      # (b) Install Node.js
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      # (c) Install project dependencies
+      - name: Install project dependencies
+        run: npm ci
+
+      # (d) Execute all Unit Tests
+      - name: Run unit tests
+        run: npx jest Tests/basic.test.js Tests/advanced.test.js Tests/custom.test.js
+
+      # (e) Execute all Integration Tests
+      - name: Run integration tests
+        run: npx jest Tests/integration.test.js Tests/stub.test.js
+
+  # ---- Deployment --------------------------------------------------------
+  deploy:
+    name: Deploy to GitHub Pages
+    # Only deploys if every leg of the test job passed.
+    needs: test
+    # Never deploy from a pull request, only from a real push to main.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
 
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload the static site
+        uses: actions/upload-pages-artifact@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          # The calculator is plain HTML/CSS/JS served from the repo root.
+          path: .
 
-      - name: Install project dependencies
-        run: npm ci
-
-      - name: Run unit tests
-        run: npx jest Tests/basic.test.js Tests/advanced.test.js Tests/custom.test.js
-
-      - name: Run integration tests
-        run: npx jest Tests/integration.test.js Tests/stub.test.js Tests/driver.test.js
-
-      - name: Run the full test suite
-        run: npm test
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
