@@ -3,7 +3,7 @@ const basic = require("../Scripts/basic");
 describe("Basic Calculator - Unit Tests", () => {
 
   test("add returns the sum of two numbers", () => {
-    expect(basic.add(2, 3)).toBe(6);
+    expect(basic.add(2, 3)).toBe(5);
     expect(basic.add(-4, 4)).toBe(0);
   });
 
